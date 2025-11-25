@@ -1,1 +1,7 @@
 [24/11/2025, 17:30:07] VENDA   | Preço: 88862.89 | Motivo: Take Profit (RSI > 70) | Resultado: 0.54 USDT
+[24/11/2025, 18:30:08] COMPRA  | Preço: 88934.09 | Motivo: SMA13 > SMA21 e RSI < 70
+[24/11/2025, 21:15:07] VENDA   | Preço: 88012.7 | Motivo: Cruzamento de Médias | Resultado: -0.92 USDT
+[25/11/2025, 02:45:06] COMPRA  | Preço: 88203.43 | Motivo: SMA13 > SMA21 e RSI < 70
+[25/11/2025, 05:15:05] VENDA   | Preço: 87390.29 | Motivo: Cruzamento de Médias | Resultado: -0.81 USDT
+[25/11/2025, 10:45:07] COMPRA  | Preço: 87038.07 | Motivo: SMA13 > SMA21 e RSI < 50
+[25/11/2025, 12:00:09] VENDA   | Preço: 86748.95 | Motivo: Cruzamento de Médias | Resultado: -0.29 USDT
