@@ -96,14 +96,20 @@ function calcBollinger(data, period, multiplier) {
     };
 }
 
+// --- LÓGICA PRINCIPAL (CORRIGIDA) ---
 async function start() {
     try {
         const { data } = await axios.get(API_URL + "/api/v3/klines?limit=40&interval=" + INTERVAL + "&symbol=" + SYMBOL);
         
-        const closedCandles = data.slice(0, data.length - 1); 
-        const lastCandle = closedCandles[closedCandles.length - 1];
-        const currentPrice = parseFloat(lastCandle[4]);
+        // CORREÇÃO:
+        // 1. Pegamos o preço AO VIVO do último candle (o que ainda está mexendo)
+        const liveCandle = data[data.length - 1];
+        const currentPrice = parseFloat(liveCandle[4]);
 
+        // 2. Pegamos os dados FECHADOS para calcular os indicadores (para não repintar)
+        const closedCandles = data.slice(0, data.length - 1); 
+
+        // CÁLCULO DE TODOS OS INDICADORES (Baseado no fechamento)
         const data21 = closedCandles.slice(-21); 
         const data13 = closedCandles.slice(-13); 
         const dataRSI = closedCandles.slice(-15); 
@@ -113,8 +119,9 @@ async function start() {
 
         const bb = calcBollinger(closedCandles, BOLLINGER_PERIOD, BOLLINGER_MULTIPLIER);
 
+        // Atualiza API
         publicData = {
-            price: currentPrice,
+            price: currentPrice, // Agora o React vai mostrar o preço real instantâneo
             rsi: rsi,
             sma13: sma13,
             sma21: sma21,
@@ -130,16 +137,19 @@ async function start() {
 
         console.clear();
         console.log(`=== BOT CRYPTO HÍBRIDO [${STRATEGY_TYPE}] ===`);
-        console.log(`Preço: ${currentPrice} | RSI: ${rsi.toFixed(2)}`);
+        // Agora você vai ver o preço mudando a cada 3 segundos no terminal
+        console.log(`Preço AO VIVO: ${currentPrice} | RSI: ${rsi.toFixed(2)}`);
         
         if(STRATEGY_TYPE === "SCALPING") {
             console.log(`Bollinger: Teto ${bb.upper.toFixed(2)} | Fundo ${bb.lower.toFixed(2)}`);
+            console.log(`Alvo Saída (Média): ${bb.middle.toFixed(2)}`); // Adicionei para você ver o alvo
         } else {
             console.log(`Médias: SMA13 ${sma13.toFixed(2)} | SMA21 ${sma21.toFixed(2)}`);
         }
         
         console.log(`Posição: ${isOpenned ? "COMPRADO" : "LÍQUIDO"}`);
 
+        // --- CÉREBRO CENTRAL DE DECISÃO ---
         if (isOpenned) {
             let sellReason = null;
 
@@ -151,6 +161,8 @@ async function start() {
             } else if (STRATEGY_TYPE === "SCALPING") {
                 if (currentPrice <= buyPrice * (1 - STOP_LOSS_SCALP)) sellReason = "Stop Loss (Scalp)";
                 else if (currentPrice >= bb.upper) sellReason = "Alvo Atingido (Topo do Canal)";
+                // Agora ele vai comparar o PREÇO AO VIVO com a média.
+                // Se bater $87.300 agora, ele vende na hora!
                 else if (currentPrice >= bb.middle && currentPrice > buyPrice) sellReason = "Retorno à Média (Lucro Seguro)";
             }
 
