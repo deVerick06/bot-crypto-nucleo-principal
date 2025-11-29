@@ -1,4 +1,0 @@
-[24/11/2025, 17:30:07] VENDA   | Preço: 88862.89 | Motivo: Take Profit (RSI > 70) | Resultado: 0.54 USDT
-[25/11/2025, 12:00:09] VENDA   | Preço: 86748.95 | Motivo: Cruzamento de Médias | Resultado: -0.29 USDT
-[25/11/2025, 16:30:07] COMPRA (SCALPING) | Preço: 86273.33 | Motivo: Preço tocou fundo de Bollinger
-[25/11/2025, 17:54:26] VENDA (SCALPING)  | Preço: 87366.54 | Motivo: Retorno à Média (Lucro Seguro) | Resultado: 1.09 USDT
