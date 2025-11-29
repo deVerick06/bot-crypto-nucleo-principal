@@ -9,10 +9,10 @@ const app = express();
 app.use(cors());
 
 const SYMBOL = "BTCUSDT";
-const QUANTITY = "0.001";
+const QUANTITY = "0.0001";
 const API_KEY = process.env.API_KEY;
 const SECRET_KEY = process.env.SECRET_KEY;
-const API_URL = "https://testnet.binance.vision";
+const API_URL = "https://api.binance.com";
 const INTERVAL = "15m";
 
 const STRATEGY_TYPE = "SCALPING"; 
@@ -96,20 +96,19 @@ function calcBollinger(data, period, multiplier) {
     };
 }
 
-// --- LÓGICA PRINCIPAL (CORRIGIDA) ---
+
 async function start() {
     try {
         const { data } = await axios.get(API_URL + "/api/v3/klines?limit=40&interval=" + INTERVAL + "&symbol=" + SYMBOL);
         
-        // CORREÇÃO:
-        // 1. Pegamos o preço AO VIVO do último candle (o que ainda está mexendo)
+
         const liveCandle = data[data.length - 1];
         const currentPrice = parseFloat(liveCandle[4]);
 
-        // 2. Pegamos os dados FECHADOS para calcular os indicadores (para não repintar)
+
         const closedCandles = data.slice(0, data.length - 1); 
 
-        // CÁLCULO DE TODOS OS INDICADORES (Baseado no fechamento)
+
         const data21 = closedCandles.slice(-21); 
         const data13 = closedCandles.slice(-13); 
         const dataRSI = closedCandles.slice(-15); 
@@ -119,9 +118,9 @@ async function start() {
 
         const bb = calcBollinger(closedCandles, BOLLINGER_PERIOD, BOLLINGER_MULTIPLIER);
 
-        // Atualiza API
+
         publicData = {
-            price: currentPrice, // Agora o React vai mostrar o preço real instantâneo
+            price: currentPrice,
             rsi: rsi,
             sma13: sma13,
             sma21: sma21,
@@ -137,19 +136,19 @@ async function start() {
 
         console.clear();
         console.log(`=== BOT CRYPTO HÍBRIDO [${STRATEGY_TYPE}] ===`);
-        // Agora você vai ver o preço mudando a cada 3 segundos no terminal
+
         console.log(`Preço AO VIVO: ${currentPrice} | RSI: ${rsi.toFixed(2)}`);
         
         if(STRATEGY_TYPE === "SCALPING") {
             console.log(`Bollinger: Teto ${bb.upper.toFixed(2)} | Fundo ${bb.lower.toFixed(2)}`);
-            console.log(`Alvo Saída (Média): ${bb.middle.toFixed(2)}`); // Adicionei para você ver o alvo
+            console.log(`Alvo Saída (Média): ${bb.middle.toFixed(2)}`); 
         } else {
             console.log(`Médias: SMA13 ${sma13.toFixed(2)} | SMA21 ${sma21.toFixed(2)}`);
         }
         
         console.log(`Posição: ${isOpenned ? "COMPRADO" : "LÍQUIDO"}`);
 
-        // --- CÉREBRO CENTRAL DE DECISÃO ---
+
         if (isOpenned) {
             let sellReason = null;
 
@@ -161,8 +160,7 @@ async function start() {
             } else if (STRATEGY_TYPE === "SCALPING") {
                 if (currentPrice <= buyPrice * (1 - STOP_LOSS_SCALP)) sellReason = "Stop Loss (Scalp)";
                 else if (currentPrice >= bb.upper) sellReason = "Alvo Atingido (Topo do Canal)";
-                // Agora ele vai comparar o PREÇO AO VIVO com a média.
-                // Se bater $87.300 agora, ele vende na hora!
+
                 else if (currentPrice >= bb.middle && currentPrice > buyPrice) sellReason = "Retorno à Média (Lucro Seguro)";
             }
 
